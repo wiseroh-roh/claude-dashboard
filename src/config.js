@@ -10,6 +10,8 @@ module.exports = {
   CLAUDE_JSON: process.env.CLAUDE_JSON || path.join(os.homedir(), '.claude.json'),
   MCP_AUTH_CACHE: path.join(CLAUDE_DIR, 'mcp-needs-auth-cache.json'),
   INSTALLED_PLUGINS: path.join(CLAUDE_DIR, 'plugins', 'installed_plugins.json'),
+  MARKETPLACES: path.join(CLAUDE_DIR, 'plugins', 'known_marketplaces.json'),
+  LAST_UPDATE_RESULT: path.join(CLAUDE_DIR, '.last-update-result.json'),
   SETTINGS: path.join(CLAUDE_DIR, 'settings.json'),
   TASKS_DIR: path.join(CLAUDE_DIR, 'tasks'),
   PORT: Number(process.env.PORT) || 7878,

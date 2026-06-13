@@ -122,6 +122,52 @@ async function renderMemory() {
   document.getElementById('panel-memory').innerHTML = intro + (blocks || '<p>메모리 없음</p>');
 }
 
+async function renderInstall() {
+  const d = await getJson('/api/install');
+  const cc = d.claudeCode || {};
+  const up = cc.update;
+  let updateLine;
+  if (!up) updateLine = '<span class="badge ok">이상 없음</span>';
+  else if (up.outcome === 'failed' || up.status === 'install_failed')
+    updateLine = `<span class="badge err">업데이트 실패</span> ${esc(up.versionFrom || '?')} → ${esc(up.versionTo || '?')} <small>(${esc(up.errorCode || '')})</small>`;
+  else updateLine = `<span class="badge ok">${esc(up.outcome || up.status || '완료')}</span> ${esc(up.versionTo || '')}`;
+
+  const ccBlock = `<div class="src-block">
+    <div class="src-head"><b>Claude Code</b> <span class="badge">v${esc(cc.version || '?')}</span></div>
+    <div class="kv"><span>설치 방식</span><b>${esc(cc.installMethod || '–')}</b></div>
+    <div class="kv"><span>누적 실행</span><b>${esc(cc.numStartups != null ? cc.numStartups + '회' : '–')}</b></div>
+    <div class="kv"><span>최초 실행</span><b>${esc((cc.firstStartTime || '').slice(0, 10) || '–')}</b></div>
+    <div class="kv"><span>업데이트</span><span>${updateLine}</span></div>
+  </div>`;
+
+  const plugins = (d.plugins || []).map(p =>
+    `<tr><td>${esc(p.name)}</td><td>${esc(p.version || '–')}</td>`
+    + `<td>${p.enabled ? '<span class="badge ok">활성</span>' : '<span class="badge">비활성</span>'}</td>`
+    + `<td>${esc((p.installedAt || '').slice(0, 10) || '–')}</td><td>${esc((p.lastUpdated || '').slice(0, 10) || '–')}</td></tr>`).join('');
+
+  const markets = (d.marketplaces || []).map(m =>
+    `<tr><td>${esc(m.name)}</td><td class="item-desc">${esc(m.source || '–')}</td><td>${esc((m.lastUpdated || '').slice(0, 10) || '–')}</td></tr>`).join('');
+
+  document.getElementById('panel-install').innerHTML =
+    `<p class="tab-intro">Claude Code 본체와 설치된 <b>플러그인·마켓플레이스</b>의 설치/버전 상태입니다.</p>`
+    + ccBlock
+    + `<div class="src-block"><div class="src-head"><b>설치된 플러그인</b> <small>· ${(d.plugins || []).length}개</small></div>`
+    + `<table class="data-table"><tr><th>플러그인</th><th>버전</th><th>활성</th><th>설치</th><th>갱신</th></tr>${plugins}</table></div>`
+    + `<div class="src-block"><div class="src-head"><b>마켓플레이스</b> <small>· ${(d.marketplaces || []).length}개</small></div>`
+    + `<table class="data-table"><tr><th>이름</th><th>출처</th><th>갱신</th></tr>${markets}</table></div>`;
+}
+
+async function initHeader() {
+  try {
+    const d = await getJson('/api/install');
+    const cc = d.claudeCode || {};
+    const chip = document.getElementById('cc-chip');
+    const failed = cc.update && (cc.update.outcome === 'failed' || cc.update.status === 'install_failed');
+    chip.textContent = `Claude Code v${cc.version || '?'}` + (failed ? ` · 업데이트 대기(${cc.update.versionTo})` : '');
+    chip.className = failed ? 'chip warn' : 'chip';
+  } catch { /* leave default */ }
+}
+
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.onclick = () => {
@@ -133,6 +179,7 @@ function setupTabs() {
       if (name === 'mcp') renderMcp();
       if (name === 'skills') renderSkills();
       if (name === 'memory') renderMemory();
+      if (name === 'install') renderInstall();
     };
   });
 }
@@ -142,6 +189,7 @@ document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal')
 document.getElementById('project-filter').onchange = refreshSessions;
 
 setupTabs();
+initHeader();
 async function tick() { await refreshOverview(); await refreshSessions(); }
 tick();
 setInterval(tick, POLL_MS);

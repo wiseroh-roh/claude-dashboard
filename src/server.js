@@ -7,6 +7,7 @@ const { readSkills } = require('./sources/skills.js');
 const { readMemory } = require('./sources/memory.js');
 const { readTasks } = require('./sources/tasks.js');
 const { readSessionStats } = require('./sources/sessionStats.js');
+const { readInstall } = require('./sources/install.js');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -55,6 +56,14 @@ function createServer({ config, pricing }) {
     if (p === '/api/skills') return sendJson(res, 200, readSkills(config.INSTALLED_PLUGINS, config.SETTINGS));
     if (p === '/api/memory') return sendJson(res, 200, readMemory(config.PROJECTS_DIR));
     if (p === '/api/tasks') return sendJson(res, 200, readTasks(config.TASKS_DIR));
+    if (p === '/api/install') return sendJson(res, 200, readInstall({
+      claudeJson: config.CLAUDE_JSON,
+      installedPlugins: config.INSTALLED_PLUGINS,
+      marketplaces: config.MARKETPLACES,
+      lastUpdate: config.LAST_UPDATE_RESULT,
+      settings: config.SETTINGS,
+      projectsDir: config.PROJECTS_DIR,
+    }));
     if (p.startsWith('/api/')) return sendJson(res, 404, { error: 'unknown endpoint' });
 
     return serveStatic(res, p);

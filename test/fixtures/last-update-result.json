@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-06-13T16:29:29.118Z",
+  "path": "npm-global",
+  "outcome": "failed",
+  "status": "install_failed",
+  "version_from": "2.0.0",
+  "version_to": "2.0.1",
+  "error_code": "update_apply_exe_locked"
+}
