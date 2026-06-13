@@ -6,14 +6,16 @@ function parseTranscript(filePath, project) {
   try { text = fs.readFileSync(filePath, 'utf8'); } catch { text = ''; }
 
   let sessionId = path.basename(filePath, '.jsonl');
-  let model = null, firstTs = null, lastTs = null, turns = 0, hasError = false;
+  let model = null, firstTs = null, lastTs = null, turns = 0;
+  // Track only the MOST RECENT tool_result's error state so a transient error
+  // that was later recovered does not flag the whole session as failed.
+  let lastToolError = false;
   let lastUserTs = null;
   const tokens = { input: 0, output: 0, cacheCreate: 0, cacheRead: 0 };
   const latencies = [];
 
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
-    if (line.includes('"is_error":true')) hasError = true;
     let o;
     try { o = JSON.parse(line); } catch { continue; }
 
@@ -26,6 +28,12 @@ function parseTranscript(filePath, project) {
 
     const msg = o.message;
     const role = msg && msg.role;
+    // tool_result items live in the content array of user-role messages.
+    if (msg && Array.isArray(msg.content)) {
+      for (const item of msg.content) {
+        if (item && item.type === 'tool_result') lastToolError = item.is_error === true;
+      }
+    }
     if (role === 'user' && ts != null) lastUserTs = ts;
     if (role === 'assistant' && msg) {
       turns++;
@@ -48,7 +56,7 @@ function parseTranscript(filePath, project) {
     ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
     : null;
 
-  return { sessionId, project, model, turns, tokens, firstTs, lastTs, avgResponseMs, hasError };
+  return { sessionId, project, model, turns, tokens, firstTs, lastTs, avgResponseMs, hasError: lastToolError };
 }
 
 function listTranscripts(projectsDir) {
