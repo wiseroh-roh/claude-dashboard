@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <header id="kpi-bar">
+    <div class="kpi"><span class="kpi-label">전체 세션</span><span id="kpi-sessions" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">실행중</span><span id="kpi-running" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">누적 턴</span><span id="kpi-turns" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">입력 토큰</span><span id="kpi-input" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">출력 토큰</span><span id="kpi-output" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">평균 응답</span><span id="kpi-latency" class="kpi-value">–</span></div>
+    <div class="kpi"><span class="kpi-label">추정 비용</span><span id="kpi-cost" class="kpi-value">–</span></div>
+  </header>
+
+  <nav id="tabs">
+    <button class="tab active" data-tab="sessions">세션</button>
+    <button class="tab" data-tab="mcp">MCP</button>
+    <button class="tab" data-tab="skills">스킬</button>
+    <button class="tab" data-tab="memory">메모리</button>
+  </nav>
+
+  <main>
+    <section id="panel-sessions" class="panel active">
+      <div class="toolbar">
+        <label>프로젝트: <select id="project-filter"><option value="">전체</option></select></label>
+      </div>
+      <div id="session-cards" class="cards"></div>
+    </section>
+    <section id="panel-mcp" class="panel"><table class="data-table" id="mcp-table"></table></section>
+    <section id="panel-skills" class="panel"><table class="data-table" id="skills-table"></table></section>
+    <section id="panel-memory" class="panel"><div id="memory-list"></div></section>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-body">
+      <button id="modal-close">✕</button>
+      <h2 id="modal-title"></h2>
+      <div id="modal-meta"></div>
+      <canvas id="tool-chart"></canvas>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
