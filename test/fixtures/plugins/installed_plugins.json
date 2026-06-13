@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "plugins": {
+    "superpowers@superpowers-marketplace": [
+      { "scope": "user", "version": "5.1.0", "installedAt": "2026-05-07T12:55:29.978Z" }
+    ],
+    "oh-my-claudecode@omc": [
+      { "scope": "user", "version": "4.14.4", "installedAt": "2026-06-08T21:10:00.000Z" }
+    ]
+  }
+}

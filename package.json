@@ -1,0 +1,11 @@
+{
+  "name": "claude-dashboard",
+  "version": "0.1.0",
+  "description": "Local read-only dashboard for Claude Code state",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  },
+  "license": "MIT"
+}

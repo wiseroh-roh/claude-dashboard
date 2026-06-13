@@ -1,0 +1,11 @@
+{
+  "sessions": {
+    "sess1": {
+      "tool_counts": { "Read": 10, "Bash": 5 },
+      "last_tool": "Read",
+      "total_calls": 15,
+      "started_at": 1780411275,
+      "updated_at": 1780416881
+    }
+  }
+}
