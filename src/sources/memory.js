@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { parseFrontmatter } = require('./frontmatter.js');
 
 function readMemory(projectsDir) {
   const out = [];
@@ -12,9 +13,18 @@ function readMemory(projectsDir) {
     const files = [];
     for (const name of entries) {
       if (!name.endsWith('.md')) continue;
+      const full = path.join(memDir, name);
       let size = 0;
-      try { size = fs.statSync(path.join(memDir, name)).size; } catch { /* ignore */ }
-      files.push({ name, size });
+      try { size = fs.statSync(full).size; } catch { /* ignore */ }
+      let text = '';
+      try { text = fs.readFileSync(full, 'utf8'); } catch { /* ignore */ }
+      const fm = parseFrontmatter(text);
+      files.push({
+        name,
+        size,
+        description: fm.description || (name === 'MEMORY.md' ? '메모리 인덱스' : ''),
+        type: fm.type || null,
+      });
     }
     if (files.length) {
       out.push({ project: p, files: files.sort((a, b) => a.name.localeCompare(b.name)) });

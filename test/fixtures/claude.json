@@ -1,1 +1,1 @@
-{ "mcpServers": { "local-fs": { "command": "node", "args": ["fs.js"] } } }
+{ "mcpServers": { "local-fs": { "command": "node", "args": ["fs.js"] } }, "claudeAiMcpEverConnected": ["claude.ai Context7"] }
