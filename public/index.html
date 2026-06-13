@@ -30,6 +30,13 @@
       <div class="toolbar">
         <label>프로젝트: <select id="project-filter"><option value="">전체</option></select></label>
       </div>
+      <div class="legend">
+        <span class="legend-title">상태 색상:</span>
+        <span class="legend-item"><span class="dot running"></span>실행중 <small>(최근 60초 내 활동)</small></span>
+        <span class="legend-item"><span class="dot waiting"></span>대기 <small>(60초~30분)</small></span>
+        <span class="legend-item"><span class="dot idle"></span>유휴 <small>(30분 이상)</small></span>
+        <span class="legend-item"><span class="dot error"></span>오류 <small>(마지막 도구 결과가 오류)</small></span>
+      </div>
       <div id="session-cards" class="cards"></div>
     </section>
     <section id="panel-mcp" class="panel"><table class="data-table" id="mcp-table"></table></section>

@@ -1,4 +1,5 @@
 const POLL_MS = 5000;
+const STATUS_LABEL = { running: '실행중', waiting: '대기', idle: '유휴', error: '오류' };
 const fmt = (n) => n == null ? '–' : Intl.NumberFormat().format(n);
 const fmtTokens = (n) => n == null ? '–' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'k' : String(n);
 const fmtMs = (ms) => ms == null ? '–' : (ms/1000).toFixed(1)+'s';
@@ -35,9 +36,9 @@ async function refreshSessions() {
   container.innerHTML = '';
   for (const c of cards) {
     const div = document.createElement('div');
-    div.className = 'card';
+    div.className = 'card ' + c.status;
     div.innerHTML = `
-      <div class="card-head"><span class="dot ${c.status}"></span><span class="card-title">${c.project}</span></div>
+      <div class="card-head"><span class="dot ${c.status}"></span><span class="card-title">${c.project}</span><span class="status-label ${c.status}">${STATUS_LABEL[c.status] || c.status}</span></div>
       <div class="card-stats">
         턴 ${fmt(c.turns)} · 토큰 ${fmtTokens(c.tokens.input + c.tokens.output)}<br>
         지연 ${fmtMs(c.avgResponseMs)} · ${fmtUsd(c.costUsd)}<br>
