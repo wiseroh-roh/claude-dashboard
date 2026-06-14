@@ -197,3 +197,14 @@ main { padding: 18px 22px 40px; }
 #modal-close:hover { color: var(--text); }
 #modal-title { margin: 0 0 4px; font-size: 18px; }
 #modal-meta { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+  #layout { grid-template-columns: 1fr; }
+  #sidebar {
+    position: static; height: auto; flex-direction: row; flex-wrap: wrap;
+    align-items: center; gap: 10px;
+  }
+  #nav { flex-direction: row; flex-wrap: wrap; }
+  .sidebar-foot { margin-top: 0; margin-left: auto; }
+}
