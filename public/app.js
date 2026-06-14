@@ -7,6 +7,19 @@ const fmtUsd = (n) => n == null ? '–' : '$'+n.toFixed(2);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const MCP_STATUS = { connected: '🟢 사용 가능', needs_auth: '🟡 인증 필요', configured: '⚪ 설정됨' };
 const MEM_TYPE = { user: '사용자', feedback: '피드백', project: '프로젝트', reference: '참고' };
+const fmtKB = (n) => n == null ? '' : (n / 1024).toFixed(1) + ' KB';
+const MEM_STYLE = {
+  user:      { color: '#56b6ff', icon: '👤' },
+  feedback:  { color: '#ffcc33', icon: '💬' },
+  project:   { color: '#b06cff', icon: '📌' },
+  reference: { color: '#3ddc84', icon: '🔗' },
+  index:     { color: '#9aa3b8', icon: '🗂️' },
+};
+// 파일의 표시 유형(키): 알려진 type이면 그대로, MEMORY.md나 미상이면 'index'.
+function memKind(f) {
+  if (f.type && MEM_STYLE[f.type]) return f.type;
+  return 'index';
+}
 
 async function getJson(url) { const r = await fetch(url); return r.json(); }
 
@@ -111,15 +124,45 @@ async function renderMemory() {
   const [rows, tr] = [await getJson('/api/memory'), await ensureTR()];
   const memTr = tr.memoryByFile || {};
   const intro = `<p class="tab-intro">프로젝트별 <b>장기 메모리</b>입니다. Claude가 세션을 넘어 기억하는 사실로, 유형은 사용자·피드백·프로젝트·참고로 나뉩니다.</p>`;
-  const blocks = rows.map(r => {
-    const items = r.files.map(f => {
-      const badge = f.type ? `<span class="badge">${esc(MEM_TYPE[f.type] || f.type)}</span> ` : '';
-      const desc = memTr[f.name] || f.description;
-      return `<li>${badge}<span class="item-name">${esc(f.name)}</span>${desc ? ` — <span class="item-desc">${esc(desc)}</span>` : ''}</li>`;
-    }).join('');
-    return `<div class="src-block"><div class="src-head"><b>${esc(r.project)}</b> <small>· ${r.files.length}개</small></div><ul class="desc-list">${items}</ul></div>`;
+
+  // 전체 유형별 개수 집계
+  const counts = {};
+  for (const r of rows) for (const f of r.files) {
+    const k = memKind(f);
+    counts[k] = (counts[k] || 0) + 1;
+  }
+  const order = ['user', 'feedback', 'project', 'reference', 'index'];
+  const sumItems = order.filter(k => counts[k]).map(k => {
+    const st = MEM_STYLE[k];
+    const label = k === 'index' ? '색인' : (MEM_TYPE[k] || k);
+    return `<span class="mem-sum" style="--c:${st.color}">${st.icon} ${label} ${counts[k]}</span>`;
   }).join('');
-  document.getElementById('panel-memory').innerHTML = intro + (blocks || '<p>메모리 없음</p>');
+  const summary = sumItems ? `<div class="mem-summary">${sumItems}</div>` : '';
+
+  const blocks = rows.map(r => {
+    const cards = r.files.map(f => {
+      const k = memKind(f);
+      const st = MEM_STYLE[k];
+      const label = k === 'index' ? '색인' : (MEM_TYPE[f.type] || f.type);
+      const desc = memTr[f.name] || f.description || '';
+      const size = fmtKB(f.size);
+      return `<div class="mem-card" style="--c:${st.color}">
+        <div class="mem-card-head">
+          <span class="mem-ic">${st.icon}</span>
+          <span class="mem-name">${esc(f.name)}</span>
+          <span class="mem-type">${esc(label)}</span>
+        </div>
+        ${desc ? `<div class="mem-desc">${esc(desc)}</div>` : ''}
+        ${size ? `<div class="mem-size">${esc(size)}</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="src-block">
+      <div class="src-head"><b>📁 ${esc(r.project)}</b> <small>· ${r.files.length}개</small></div>
+      <div class="mem-grid">${cards}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('panel-memory').innerHTML = intro + summary + (blocks || '<p>메모리 없음</p>');
 }
 
 async function renderInstall() {
@@ -169,9 +212,9 @@ async function initHeader() {
 }
 
 function setupTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
+  document.querySelectorAll('.nav-item').forEach(tab => {
     tab.onclick = () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
       const name = tab.dataset.tab;
