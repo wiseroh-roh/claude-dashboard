@@ -151,6 +151,31 @@ main { padding: 18px 22px 40px; }
 .kv:first-of-type { border-top: none; }
 .kv > span:first-child { color: var(--muted); }
 
+/* ---------- Memory cards ---------- */
+.mem-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.mem-sum {
+  font-size: 12px; font-weight: 600; color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  padding: 5px 11px; border-radius: 999px;
+}
+.mem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.mem-card {
+  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px 12px 16px; box-shadow: var(--shadow);
+  transition: transform .12s, border-color .12s;
+}
+.mem-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c); }
+.mem-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--c) 50%, var(--line)); }
+.mem-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.mem-ic { width: 22px; height: 22px; flex: none; border-radius: 6px; display: grid; place-items: center; font-size: 12px; background: color-mix(in srgb, var(--c) 18%, transparent); }
+.mem-name { flex: 1; min-width: 0; font-weight: 650; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mem-type { flex: none; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); padding: 2px 8px; border-radius: 999px; }
+.mem-desc { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.mem-size { color: var(--faint); font-size: 10.5px; margin-top: 7px; font-variant-numeric: tabular-nums; }
+
 /* ---------- Tables ---------- */
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th { text-align: left; padding: 9px 11px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--faint); border-bottom: 1px solid var(--line); }
