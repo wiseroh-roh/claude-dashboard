@@ -169,9 +169,9 @@ async function initHeader() {
 }
 
 function setupTabs() {
-  document.querySelectorAll('.tab').forEach(tab => {
+  document.querySelectorAll('.nav-item').forEach(tab => {
     tab.onclick = () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
       const name = tab.dataset.tab;
