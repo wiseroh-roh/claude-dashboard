@@ -8,6 +8,7 @@ const { readMemory } = require('./sources/memory.js');
 const { readTasks } = require('./sources/tasks.js');
 const { readSessionStats } = require('./sources/sessionStats.js');
 const { readInstall } = require('./sources/install.js');
+const { moveSessionToTrash } = require('./actions/deleteSession.js');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -38,6 +39,28 @@ function createServer({ config, pricing }) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const p = url.pathname;
+
+    if (req.method === 'DELETE' && p.startsWith('/api/sessions/')) {
+      const id = decodeURIComponent(p.slice('/api/sessions/'.length));
+      const entry = snapshot.files[id];
+      if (!entry) return sendJson(res, 404, { error: 'not found' });
+      try {
+        const { trashedTo } = moveSessionToTrash({
+          file: entry.file,
+          projectsDir: config.PROJECTS_DIR,
+          trashDir: config.TRASH_DIR,
+          project: entry.project,
+          sessionId: id,
+          now: Date.now(),
+        });
+        snapshot = cache.refresh();
+        return sendJson(res, 200, { ok: true, trashedTo });
+      } catch (e) {
+        if (e.code === 'EOUTSIDE') return sendJson(res, 400, { error: e.message });
+        if (e.code === 'ENOENT') return sendJson(res, 404, { error: 'not found' });
+        return sendJson(res, 500, { error: e.message });
+      }
+    }
 
     if (p === '/api/overview') return sendJson(res, 200, snapshot.overview);
     if (p === '/api/sessions') {
