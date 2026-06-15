@@ -26,3 +26,12 @@ test('second refresh reuses cache when mtime unchanged (same result)', () => {
   const b = cache.refresh(now);
   assert.deepStrictEqual(a.overview, b.overview);
 });
+
+test('refresh exposes a sessionId -> file map', () => {
+  const cache = createCache({ projectsDir: PROJECTS, pricing, config });
+  const snap = cache.refresh(Date.parse('2026-06-13T14:31:10.000Z'));
+  assert.ok(snap.files, 'snapshot has files map');
+  assert.ok(snap.files.sess1, 'sess1 present in files map');
+  assert.strictEqual(snap.files.sess1.project, 'proj-a');
+  assert.ok(snap.files.sess1.file.endsWith('sess1.jsonl'));
+});

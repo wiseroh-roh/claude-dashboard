@@ -20,7 +20,11 @@ function createCache({ projectsDir, pricing, config }) {
     const cards = [...parsed.values()]
       .map(v => buildSessionCard(v.summary, { pricing, now, config }))
       .sort((a, b) => (b.lastTs || 0) - (a.lastTs || 0));
-    return { cards, overview: buildOverview(cards) };
+    const files = {};
+    for (const [file, v] of parsed) {
+      files[v.summary.sessionId] = { file, project: v.summary.project };
+    }
+    return { cards, overview: buildOverview(cards), files };
   }
 
   return { refresh };
