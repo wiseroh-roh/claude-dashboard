@@ -179,7 +179,7 @@ async function renderMemory() {
       const label = k === 'index' ? '색인' : (MEM_TYPE[f.type] || f.type);
       const desc = memTr[f.name] || f.description || '';
       const size = fmtKB(f.size);
-      return `<div class="mem-card" style="--c:${st.color}">
+      return `<div class="mem-card" data-project="${esc(r.project)}" data-name="${esc(f.name)}" style="--c:${st.color}">
         <div class="mem-card-head">
           <span class="mem-ic">${st.icon}</span>
           <span class="mem-name">${esc(f.name)}</span>
@@ -196,6 +196,28 @@ async function renderMemory() {
   }).join('');
 
   document.getElementById('panel-memory').innerHTML = intro + summary + (blocks || '<p>메모리 없음</p>');
+  document.querySelectorAll('#panel-memory .mem-card').forEach(card => {
+    card.onclick = () => openMemoryModal(card.dataset.project, card.dataset.name);
+  });
+}
+async function openMemoryModal(project, name) {
+  document.getElementById('mem-modal-title').textContent = name;
+  document.getElementById('mem-modal-meta').textContent = '프로젝트: ' + project;
+  const pre = document.getElementById('mem-content');
+  pre.textContent = '불러오는 중…';
+  document.getElementById('mem-modal').classList.remove('hidden');
+  try {
+    const r = await fetch('/api/memory/file?project=' + encodeURIComponent(project) + '&name=' + encodeURIComponent(name));
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      pre.textContent = '불러오기 실패: ' + (e.error || r.status);
+      return;
+    }
+    const d = await r.json();
+    pre.textContent = d.content;
+  } catch (err) {
+    pre.textContent = '불러오기 실패: ' + err.message;
+  }
 }
 
 async function renderInstall() {
@@ -262,6 +284,8 @@ function setupTabs() {
 
 document.getElementById('modal-close').onclick = () => document.getElementById('modal').classList.add('hidden');
 document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal') e.currentTarget.classList.add('hidden'); };
+document.getElementById('mem-modal-close').onclick = () => document.getElementById('mem-modal').classList.add('hidden');
+document.getElementById('mem-modal').onclick = (e) => { if (e.target.id === 'mem-modal') e.currentTarget.classList.add('hidden'); };
 document.getElementById('project-filter').onchange = refreshSessions;
 
 setupTabs();
