@@ -217,3 +217,9 @@ main { padding: 18px 22px 40px; }
 .btn-ghost:hover { color: var(--text); }
 .confirm-text { color: var(--text); font-size: 13px; margin-right: auto; }
 .error-text { color: var(--red); font-size: 13px; margin-right: auto; }
+
+/* ---------- Memory file viewer ---------- */
+.mem-card { cursor: pointer; }
+#mem-modal-title { margin: 0 0 4px; font-size: 16px; word-break: break-all; }
+#mem-modal-meta { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+#mem-content { max-height: 60vh; overflow: auto; margin: 0; padding: 14px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; font-family: "Cascadia Code", Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.6; color: var(--text); white-space: pre-wrap; word-break: break-word; }
