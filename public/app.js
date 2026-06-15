@@ -74,8 +74,41 @@ async function refreshSessions() {
 }
 
 let toolChart = null;
+let currentSessionId = null;
+
+function resetDeleteUI() {
+  const box = document.getElementById('modal-actions');
+  box.innerHTML = '<button id="session-delete" class="btn-danger">세션 삭제</button>';
+  document.getElementById('session-delete').onclick = confirmDeleteUI;
+}
+function confirmDeleteUI() {
+  const box = document.getElementById('modal-actions');
+  box.innerHTML =
+    '<span class="confirm-text">정말 삭제할까요? 휴지통으로 이동합니다.</span>'
+    + '<button id="del-cancel" class="btn-ghost">취소</button>'
+    + '<button id="del-confirm" class="btn-danger">휴지통으로 이동</button>';
+  document.getElementById('del-cancel').onclick = resetDeleteUI;
+  document.getElementById('del-confirm').onclick = doDelete;
+}
+async function doDelete() {
+  const box = document.getElementById('modal-actions');
+  try {
+    const r = await fetch('/api/sessions/' + encodeURIComponent(currentSessionId), { method: 'DELETE' });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      box.innerHTML = `<span class="error-text">삭제 실패: ${esc(e.error || r.status)}</span>`;
+      return;
+    }
+    document.getElementById('modal').classList.add('hidden');
+    refreshSessions();
+  } catch (err) {
+    box.innerHTML = `<span class="error-text">삭제 실패: ${esc(err.message)}</span>`;
+  }
+}
 async function openModal(id) {
   const d = await getJson('/api/sessions/' + encodeURIComponent(id));
+  currentSessionId = id;
+  resetDeleteUI();
   document.getElementById('modal-title').textContent = d.project;
   document.getElementById('modal-meta').textContent =
     `${d.model || 'unknown'} · 턴 ${fmt(d.turns)} · ${fmtUsd(d.costUsd)} · 상태 ${d.status}`;
