@@ -117,3 +117,42 @@ test('DELETE /api/sessions/:id moves the session to trash and drops it from list
     await new Promise(r => server.close(r));
   }
 });
+
+test('GET /api/memory/file returns content, 400 on traversal, 404 on missing', async () => {
+  const config = {
+    PROJECTS_DIR: path.join(FIX, 'projects'),
+    SESSION_STATS: path.join(FIX, '.session-stats.json'),
+    CLAUDE_JSON: path.join(FIX, 'claude.json'),
+    MCP_AUTH_CACHE: path.join(FIX, 'mcp-needs-auth-cache.json'),
+    INSTALLED_PLUGINS: path.join(FIX, 'plugins', 'installed_plugins.json'),
+    SETTINGS: path.join(FIX, 'settings.json'),
+    TASKS_DIR: path.join(FIX, 'tasks'),
+    RUNNING_THRESHOLD_MS: 60_000,
+    IDLE_THRESHOLD_MS: 1_800_000,
+    POLL_MS: 999_999,
+  };
+  const pricing = require('../src/pricing.json');
+  const { server, stop } = createServer({ config, pricing });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const port = server.address().port;
+  try {
+    const ok = await get(port, '/api/memory/file?project=proj-a&name=some-fact.md');
+    assert.strictEqual(ok.status, 200);
+    const body = JSON.parse(ok.body);
+    assert.strictEqual(body.name, 'some-fact.md');
+    assert.ok(body.content.includes('body'));
+    assert.ok(body.content.includes('a test fact'));
+
+    const bad = await get(port, '/api/memory/file?project=proj-a&name=' + encodeURIComponent('../../etc'));
+    assert.strictEqual(bad.status, 400);
+
+    const miss = await get(port, '/api/memory/file?project=proj-a&name=nope.md');
+    assert.strictEqual(miss.status, 404);
+
+    const noargs = await get(port, '/api/memory/file');
+    assert.strictEqual(noargs.status, 400);
+  } finally {
+    stop();
+    await new Promise(r => server.close(r));
+  }
+});

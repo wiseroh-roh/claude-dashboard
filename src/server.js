@@ -9,6 +9,7 @@ const { readTasks } = require('./sources/tasks.js');
 const { readSessionStats } = require('./sources/sessionStats.js');
 const { readInstall } = require('./sources/install.js');
 const { moveSessionToTrash } = require('./actions/deleteSession.js');
+const { readMemoryFile } = require('./sources/memoryFile.js');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -78,6 +79,19 @@ function createServer({ config, pricing }) {
     if (p === '/api/mcp') return sendJson(res, 200, readMcpServers(config.CLAUDE_JSON, config.MCP_AUTH_CACHE));
     if (p === '/api/skills') return sendJson(res, 200, readSkills(config.INSTALLED_PLUGINS, config.SETTINGS));
     if (p === '/api/memory') return sendJson(res, 200, readMemory(config.PROJECTS_DIR));
+    if (p === '/api/memory/file') {
+      const project = url.searchParams.get('project');
+      const name = url.searchParams.get('name');
+      if (!project || !name) return sendJson(res, 400, { error: 'project and name required' });
+      try {
+        const { content } = readMemoryFile({ projectsDir: config.PROJECTS_DIR, project, name });
+        return sendJson(res, 200, { project, name, content });
+      } catch (e) {
+        if (e.code === 'EOUTSIDE') return sendJson(res, 400, { error: e.message });
+        if (e.code === 'ENOENT') return sendJson(res, 404, { error: 'not found' });
+        return sendJson(res, 500, { error: e.message });
+      }
+    }
     if (p === '/api/tasks') return sendJson(res, 200, readTasks(config.TASKS_DIR));
     if (p === '/api/install') return sendJson(res, 200, readInstall({
       claudeJson: config.CLAUDE_JSON,
