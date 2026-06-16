@@ -200,9 +200,42 @@ async function renderMemory() {
     card.onclick = () => openMemoryModal(card.dataset.project, card.dataset.name);
   });
 }
+let currentMemory = null;
+
+function resetMemDeleteUI() {
+  const box = document.getElementById('mem-modal-actions');
+  box.innerHTML = '<button id="mem-delete" class="btn-danger">메모리 삭제</button>';
+  document.getElementById('mem-delete').onclick = confirmMemDeleteUI;
+}
+function confirmMemDeleteUI() {
+  const box = document.getElementById('mem-modal-actions');
+  box.innerHTML =
+    '<span class="confirm-text">정말 삭제할까요? 휴지통으로 이동합니다.</span>'
+    + '<button id="mem-del-cancel" class="btn-ghost">취소</button>'
+    + '<button id="mem-del-confirm" class="btn-danger">휴지통으로 이동</button>';
+  document.getElementById('mem-del-cancel').onclick = resetMemDeleteUI;
+  document.getElementById('mem-del-confirm').onclick = doMemDelete;
+}
+async function doMemDelete() {
+  const box = document.getElementById('mem-modal-actions');
+  try {
+    const r = await fetch('/api/memory/file?project=' + encodeURIComponent(currentMemory.project) + '&name=' + encodeURIComponent(currentMemory.name), { method: 'DELETE' });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      box.innerHTML = `<span class="error-text">삭제 실패: ${esc(e.error || r.status)}</span>`;
+      return;
+    }
+    document.getElementById('mem-modal').classList.add('hidden');
+    renderMemory();
+  } catch (err) {
+    box.innerHTML = `<span class="error-text">삭제 실패: ${esc(err.message)}</span>`;
+  }
+}
 async function openMemoryModal(project, name) {
   document.getElementById('mem-modal-title').textContent = name;
   document.getElementById('mem-modal-meta').textContent = '프로젝트: ' + project;
+  currentMemory = { project, name };
+  resetMemDeleteUI();
   const pre = document.getElementById('mem-content');
   pre.textContent = '불러오는 중…';
   document.getElementById('mem-modal').classList.remove('hidden');
