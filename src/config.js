@@ -15,6 +15,7 @@ module.exports = {
   SETTINGS: path.join(CLAUDE_DIR, 'settings.json'),
   TASKS_DIR: path.join(CLAUDE_DIR, 'tasks'),
   TRASH_DIR: path.join(CLAUDE_DIR, '.trash', 'sessions'),
+  MEMORY_TRASH_DIR: path.join(CLAUDE_DIR, '.trash', 'memory'),
   PORT: Number(process.env.PORT) || 7878,
   POLL_MS: Number(process.env.POLL_MS) || 5000,
   RUNNING_THRESHOLD_MS: 60 * 1000,

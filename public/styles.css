@@ -210,7 +210,7 @@ main { padding: 18px 22px 40px; }
 }
 
 /* ---------- Modal actions / delete ---------- */
-#modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+#modal-actions, #mem-modal-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
 .btn-danger { background: rgba(255,93,108,.14); color: var(--red); border: 1px solid rgba(255,93,108,.4); padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 650; cursor: pointer; transition: background .12s; }
 .btn-danger:hover { background: rgba(255,93,108,.24); }
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; transition: color .12s; }

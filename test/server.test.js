@@ -156,3 +156,47 @@ test('GET /api/memory/file returns content, 400 on traversal, 404 on missing', a
     await new Promise(r => server.close(r));
   }
 });
+
+test('DELETE /api/memory/file moves the memory file to trash and drops it from listing', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cd-memsrv-'));
+  fs.cpSync(path.join(FIX, 'projects'), path.join(root, 'projects'), { recursive: true });
+  const memTrash = path.join(root, '.trash', 'memory');
+  const config = {
+    PROJECTS_DIR: path.join(root, 'projects'),
+    SESSION_STATS: path.join(FIX, '.session-stats.json'),
+    CLAUDE_JSON: path.join(FIX, 'claude.json'),
+    MCP_AUTH_CACHE: path.join(FIX, 'mcp-needs-auth-cache.json'),
+    INSTALLED_PLUGINS: path.join(FIX, 'plugins', 'installed_plugins.json'),
+    SETTINGS: path.join(FIX, 'settings.json'),
+    TASKS_DIR: path.join(FIX, 'tasks'),
+    MEMORY_TRASH_DIR: memTrash,
+    RUNNING_THRESHOLD_MS: 60_000,
+    IDLE_THRESHOLD_MS: 1_800_000,
+    POLL_MS: 999_999,
+  };
+  const pricing = require('../src/pricing.json');
+  const { server, stop } = createServer({ config, pricing });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const port = server.address().port;
+  try {
+    const del = await del_(port, '/api/memory/file?project=proj-a&name=some-fact.md');
+    assert.strictEqual(del.status, 200);
+    assert.strictEqual(JSON.parse(del.body).ok, true);
+
+    const trashed = fs.readdirSync(memTrash);
+    assert.ok(trashed.some(f => f.startsWith('proj-a__') && f.endsWith('__some-fact.md')), 'moved to memory trash');
+
+    const mem = JSON.parse((await get(port, '/api/memory')).body);
+    const projA = mem.find(m => m.project === 'proj-a');
+    assert.ok(projA && !projA.files.some(f => f.name === 'some-fact.md'), 'some-fact.md gone from listing');
+
+    const bad = await del_(port, '/api/memory/file?project=proj-a&name=' + encodeURIComponent('../../etc'));
+    assert.strictEqual(bad.status, 400);
+
+    const miss = await del_(port, '/api/memory/file?project=proj-a&name=nope.md');
+    assert.strictEqual(miss.status, 404);
+  } finally {
+    stop();
+    await new Promise(r => server.close(r));
+  }
+});
